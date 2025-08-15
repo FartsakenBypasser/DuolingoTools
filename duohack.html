@@ -1,0 +1,84 @@
+// ==UserScript==
+// @name         Duolingo Auto Complete
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Auto complete Duolingo lessons
+// @author       You
+// @match        https://www.duolingo.com/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+    
+    let autoComplete = false;
+    let autoFarm = false;
+    let farmDelay = 2000;
+    
+    // Create UI
+    const ui = document.createElement('div');
+    ui.style.cssText = 'position:fixed;top:10px;right:10px;background:#fff;padding:10px;border:1px solid #ccc;z-index:9999;';
+    ui.innerHTML = `
+        <div>
+            <label><input type="checkbox" id="autoComplete"> Auto Complete Lesson</label><br>
+            <label><input type="checkbox" id="autoFarm"> Auto Farm Lessons</label><br>
+            <label>Farm Delay: <input type="range" id="farmDelay" min="1000" max="10000" value="2000"> <span id="delayValue">2s</span></label>
+        </div>
+    `;
+    document.body.appendChild(ui);
+    
+    // Event listeners
+    document.getElementById('autoComplete').addEventListener('change', (e) => {
+        autoComplete = e.target.checked;
+    });
+    
+    document.getElementById('autoFarm').addEventListener('change', (e) => {
+        autoFarm = e.target.checked;
+        if (autoFarm) startFarming();
+    });
+    
+    document.getElementById('farmDelay').addEventListener('input', (e) => {
+        farmDelay = parseInt(e.target.value);
+        document.getElementById('delayValue').textContent = (farmDelay/1000) + 's';
+    });
+    
+    // Auto complete lesson
+    function completeLesson() {
+        if (!autoComplete) return;
+        
+        // Skip button
+        const skipBtn = document.querySelector('[data-test="player-skip"]');
+        if (skipBtn) skipBtn.click();
+        
+        // Continue button
+        const continueBtn = document.querySelector('[data-test="player-next"]');
+        if (continueBtn) continueBtn.click();
+        
+        // Answer buttons
+        const answerBtns = document.querySelectorAll('[data-test*="challenge-choice"]');
+        if (answerBtns.length > 0) answerBtns[0].click();
+    }
+    
+    // Auto farm lessons
+    function startFarming() {
+        if (!autoFarm) return;
+        
+        setTimeout(() => {
+            // Find lesson button
+            const lessonBtn = document.querySelector('[data-test="skill-tree-lesson"]');
+            if (lessonBtn && !window.location.href.includes('/lesson')) {
+                lessonBtn.click();
+            }
+            
+            if (autoFarm) startFarming();
+        }, farmDelay);
+    }
+    
+    // Main loop
+    setInterval(() => {
+        if (window.location.href.includes('/lesson')) {
+            completeLesson();
+        }
+    }, 1000);
+    
+})();
