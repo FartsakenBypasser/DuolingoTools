@@ -1,0 +1,13 @@
+{
+  "name": "duo-rpc",
+  "version": "1.0.0",
+  "bin": "duo-rpc.js",
+  "pkg": {
+    "targets": ["node18-win-x64"],
+    "outputPath": "dist"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1",
+    "node-fetch": "^2.6.1"
+  }
+}
